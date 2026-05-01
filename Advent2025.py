@@ -524,6 +524,67 @@ def Day_7_pt_2_dep():
                 # Line has a beam above it and is not a splitter
                 
         printLines(lines)
+
+
+def Day_8_pt_1():
+    def tablePrint(coordinatePairs):
+        print(f"{'INDEX':<6} | {'ORIGIN (c1)':<20} | {'NEAREST (c2)':<20} | {'DISTANCE'}")
+        print("—" * 75)
+        for idx, entry in enumerate(coordinatePairs):
+            c1 = f"({entry['c1']['x']},{entry['c1']['y']},{entry['c1']['z']})"
+            c2 = f"({entry['c2']['x']},{entry['c2']['y']},{entry['c2']['z']})"
+            dist = entry['distance']
+            
+            # Color-coding the distance for visibility (optional, works in most terminals)
+            # If the distance is float('inf'), we print 'None'
+            dist_str = f"{dist:,.2f}" if dist != float('inf') else "N/A"
+            
+            print(f"{idx:<6} | {c1:<20} | {c2:<20} | {dist_str}")
+
+        print("—" * 75)
+    #d(p, q) = √[(p₁ - q₁)² + (p₂ - q₂)² + (p₃ - q₃)²]
+    pythagoras3D = lambda point1, point2:  (((point1['x'] - point2['x']) ** 2) + ((point1['y'] - point2['y']) ** 2) + ((point1['z'] - point2['z']) ** 2)) ** 0.5  # noqa: E731
+    with open("Advent2025Resources/day_8_input_test.txt") as file:
+        lines = file.readlines()
+        coordinates = []
+        for line in lines:
+            coords = [c.strip('\n') for c in line.split(',')]
+            coordinates.append({'x': int(coords[0]), 'y' : int(coords[1]), 'z': int(coords[2])})
+        coordinatePairs = []
+        for i in range(len(coordinates)):
+            coordinatePair = {
+                'c1': coordinates[i], 
+                'distance': float('inf'),
+                'c2': None
+                }
+            for ii in range(1 ,len(coordinates)):
+                distance = pythagoras3D(coordinates[i], coordinates[ii])
+                if distance > 0 and distance < coordinatePair['distance']:
+                    coordinatePair['c2'] = coordinates[ii]
+                    coordinatePair['distance'] = distance
+            coordinatePairs.append(coordinatePair)
+        coordinatePairs.sort(key=lambda c: c['distance'])
+        circuits = [[coordinatePairs[0]['c1'], coordinatePairs[0]['c2']]]
+        for pairIndex in range(1, len(coordinatePairs)):
+            for circuitIndex, circuit in enumerate(circuits):
+                initialCircuitLength = len(circuit)
+                cordPair1 = coordinatePairs[pairIndex]['c1']
+                cordPair2 = coordinatePairs[pairIndex]['c2']
+                if cordPair1 in circuit and cordPair2 in circuit:
+                    break
+                for coordinate in circuit:
+                    if cordPair1 == coordinate:
+                        circuits[circuitIndex].append(cordPair2)
+                        break
+                    if cordPair2 == coordinate:
+                        circuits[circuitIndex].append(cordPair1)
+                        break
+                if initialCircuitLength == len(circuit):
+                    circuits.append([coordinatePairs[pairIndex]['c1'], coordinatePairs[pairIndex]['c2']])
+        print(circuits)
+        tablePrint(coordinatePairs)
+        
+               
 if __name__ == "__main__":
     # print(Day_1())
     # print(Day_1_pt_2()) # dear god
@@ -535,7 +596,8 @@ if __name__ == "__main__":
     # print(Day_5_pt_1())
     # print(Day_5_pt_2())
     # print(Day_6_pt_2()) # Holy absolute fuck
-    print(Day_7_pt_2()) # There is no way i got this first try,
+    # print(Day_7_pt_2()) # There is no way i got this first try,
+    print(Day_8_pt_1())
     pass
 
 
